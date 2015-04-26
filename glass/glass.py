@@ -1,6 +1,7 @@
 import sqlite3
 
 conn = sqlite3.connect('glass.db')
+conn.row_factory = sqlite3.Row
 
 counters = [
     {'url': 'https://data.seattle.gov/resource/mefu-7eau.json', 'lat': 47.562903, 'lon': -122.365474, 'title': '26th Ave SW Greenway at SW Oregon St'},
@@ -32,4 +33,4 @@ def get_counters():
 if __name__ == "__main__":
     print("Counters in DB:")
     for counter in get_counters():
-        print(counter)
+        print("{id}: {url} {title}".format(**counter))
