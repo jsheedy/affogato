@@ -1,0 +1,2 @@
+# affogato
+Loop analysis
