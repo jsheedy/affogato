@@ -1,11 +1,7 @@
 import os
 import sqlite3
 
-
 DB_FILE = os.path.join(os.path.dirname(__file__), 'glass.db')
-
-conn = sqlite3.connect(DB_FILE)
-conn.row_factory = sqlite3.Row
 
 counters = [
     {'url': 'https://data.seattle.gov/resource/mefu-7eau.json',
@@ -40,8 +36,13 @@ counters = [
      'title': 'Spokane Street Bridge'}
 ]
 
+def get_conn():
+    conn = sqlite3.connect(DB_FILE)
+    conn.row_factory = sqlite3.Row
+    return conn
 
 def import_counters():
+    conn = get_conn()
     cursor = conn.cursor()
     cursor.execute('DROP TABLE IF EXISTS counters')
     cursor.execute("""CREATE TABLE counters (id INTEGER PRIMARY KEY, url TEXT,
@@ -54,6 +55,7 @@ def import_counters():
 
 
 def get_counters():
+    conn = get_conn()
     c = conn.cursor()
     for row in c.execute('SELECT * from counters'):
         yield row
