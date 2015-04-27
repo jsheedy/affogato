@@ -13,9 +13,14 @@ import pandas as pd
 import statsmodels.formula.api as smf
 import urllib                       # interface with APIs
 
+import sys
+sys.path.append('../..')
+from glass import glass
+
 
 def api_to_json(url=None):
     '''Takes a url, returns json.'''
+    url += '?$limit=50000'
     try:
         df = urllib.request.urlopen(url).read().decode('utf-8')
     except IOError as e:
@@ -46,8 +51,6 @@ def format_df(df):
 
     df.set_index('date', inplace=True)
 
-    df = df.astype('float')
-
     return(df)
 
 
@@ -61,7 +64,7 @@ def ped_data(df):
 
         df = df.drop(dfPeds, axis=1)
 
-        dfPeds += ['date']
+        dfPeds += ['date', 'id']
 
         dfPeds = temp[dfPeds]
 
@@ -76,37 +79,31 @@ def ped_data(df):
     return(df, dfPeds)
 
 
-# def get_counters():
-#     counters = \
-#         {'SW Oregon': ('https://data.seattle.gov/resource/mefu-7eau.json',
-#                        (47.562903, -122.365474)),  # 26th Ave SW Greenway at SW Oregon St
-#          'Myrtle Edwards': ('https://data.seattle.gov/resource/4qej-qvrz.json',
-#                             (47.619760, -122.361463)),  # Elliott Bay Trail in Myrtle Edwards Park
-#          'I90': ('https://data.seattle.gov/resource/u38e-ybnc.json',
-#                  (47.590466, -122.286760)),  # MTS Trail west of I90 Bridge
-#          'Sealth Trail': ('https://data.seattle.gov/resource/uh8h-bme7.json',
-#                           (47.527991, -122.280988)),  # Chief Sealth Trail North of Thistle
-#          'NW 58th': ('https://data.seattle.gov/resource/47yq-6ugv.json',
-#                      (47.670921, -122.384768)),  # NW 58th St Greenway at 22nd Ave NW
-#          'Burke Gilman': ('https://data.seattle.gov/resource/2z5v-ecg8.json',
-#                           (47.679563, -122.265262)),  # Burke Gilman Trail north of NE 70th St
-#          'NE 62nd': ('https://data.seattle.gov/resource/3h7e-f49s.json',
-#                      (47.673972, -122.285791)),  # 39th Ave NE Greenway at NE 62nd St
-#          'Broadway Bikeway': ('https://data.seattle.gov/resource/j4vh-b42a.json',
-#                               (47.612966, -122.320829)),  # Broadway Bikeway at Union St
-#          'Fremont Street': ('https://data.seattle.gov/resource/65db-xm6k.json',
-#                             (47.647716, -122.347391)),  # Fremont Street Bridge
-#          'Spokane Street': ('https://data.seattle.gov/resource/upms-nr8w.json',
-#                             (47.571353, -122.350940))}  # Spokane Street Bridge
+def create_analysis_df():
+    '''Append dataframes.'''
+    counters = glass.get_counters()
+    counters = list(counters)
 
-#     return(counters)
+    loop = pd.DataFrame()
+    loopPeds = pd.DataFrame()
+    for i in counters:
+        print(i['url'])
+        temp = api_to_json(i['url'])
+        temp = json_to_df(temp)
+        temp['id'] = i['id']
 
+        temp, tempPeds = ped_data(temp)
+
+        loop = loop.append(temp)
+
+        loopPeds = loopPeds.append(tempPeds)
+
+    return(loop, loopPeds)
 
 # url = 'http://www-k12.atmos.washington.edu/k12/grayskies/quickfix.cgi?'
 # url += 'uwa+overlay+/var/tmp/tempdata755833.html'
 
 # df = urllib.urlopen(url).read().decode('utf-8')
-
 
 
 def _analysis():
@@ -117,13 +114,11 @@ def _analysis():
 
     weather = weather.astype('str')
 
-    # weather['date'] = 
+    # weather['date'] =
 
-    counters = b.get_counters()
+    counters = glass.get_counters()
 
-    counter = b.api_to_json(counters['Broadway Bikeway'][0])
-
-    counter = b.api_to_df(counter)
+    counter = json_to_df(counters['Broadway Bikeway'][0])
 
     counter, counterPed = b.ped_data(counter)
 
