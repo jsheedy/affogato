@@ -36,17 +36,20 @@ counters = [
      'title': 'Spokane Street Bridge'}
 ]
 
+
 def get_conn():
     conn = sqlite3.connect(DB_FILE)
     conn.row_factory = sqlite3.Row
     return conn
+
 
 def import_counters():
     conn = get_conn()
     cursor = conn.cursor()
     cursor.execute('DROP TABLE IF EXISTS counters')
     cursor.execute("""CREATE TABLE counters (id INTEGER PRIMARY KEY, url TEXT,
-                        lat REAL, lon REAL, title TEXT)""")
+                                             lat REAL, lon REAL, title TEXT)"""
+                   )
     for counter in counters:
         print("inserting {}".format(counter))
         cursor.execute("""INSERT INTO counters (url, lat, lon, title)
@@ -59,6 +62,24 @@ def get_counters():
     c = conn.cursor()
     for row in c.execute('SELECT * from counters'):
         yield row
+
+
+def _import_analysis(df, table_name):
+    '''Write analysis dataframe (df) to sqlite db using provided table_name.'''
+    conn = get_conn()
+    cursor = conn.cursor()
+    cursor.execute('DROP TABLE IF EXISTS ' + table_name)
+    cursor.execute("""CREATE TABLE """ + table_name +
+                   """ (date INT, id INT, north INT, south INT,
+                        east INT, west INT)""")
+    for counter in counters:
+        print("inserting {}".format(counter))
+        cursor.execute("""INSERT INTO """ + table_name +
+                       """ (date, id, north, south, east, west)
+                       VALUES (:date, :id, :north, :south, :east, :west)""",
+                       df)
+        conn.commit()
+
 
 if __name__ == "__main__":
     print("Counters in DB:")
