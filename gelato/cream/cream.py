@@ -47,9 +47,17 @@ def format_df(df):
     '''Strip identifier from 'totals' column.'''
     df.columns = [x.split('_')[-1] for x in df.columns.tolist()]
 
-    df['date'] = pd.to_datetime(df.date)
+    df.rename(columns={'nb': 'north',
+                       'sb': 'south'},
+              inplace=True)
+
+    df.loc[:, 'date'] = pd.to_datetime(df.date)
 
     df.set_index('date', inplace=True)
+
+    df.loc[:, 'total'] = 0
+
+    df = df.astype('float')
 
     return(df)
 
@@ -87,7 +95,7 @@ def create_analysis_df():
     loop = pd.DataFrame()
     loopPeds = pd.DataFrame()
     for i in counters:
-        print(i['url'])
+        # print(i['url'])
         temp = api_to_json(i['url'])
         temp = json_to_df(temp)
         temp['id'] = i['id']
@@ -97,6 +105,9 @@ def create_analysis_df():
         loop = loop.append(temp)
 
         loopPeds = loopPeds.append(tempPeds)
+
+    loop['total'] = loop.drop('id', axis=1).sum(axis=1)
+    loopPeds['total'] = loopPeds.drop('id', axis=1).sum(axis=1)
 
     return(loop, loopPeds)
 
