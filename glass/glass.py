@@ -64,6 +64,13 @@ def get_counters():
         yield row
 
 
+def get_counter(id):
+    conn = get_conn()
+    c = conn.cursor()
+    c.execute('SELECT * from counters where id=:id', {'id':id})
+    return c.fetchone()
+
+
 def _import_analysis(df, table_name):
     '''Write analysis dataframe (df) to sqlite db using provided table_name.'''
     conn = get_conn()

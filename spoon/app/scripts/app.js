@@ -12,6 +12,9 @@ angular
     'ngTouch',
     'leaflet-directive'
   ])
+  .config(function($resourceProvider) {
+    $resourceProvider.defaults.stripTrailingSlashes = false;
+  })
   .config(function ($routeProvider) {
     $routeProvider
       .when('/', {

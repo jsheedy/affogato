@@ -27,6 +27,20 @@ module.exports = function (grunt) {
     // Project settings
     yeoman: appConfig,
 
+    ngconstant: {
+      options: {
+        deps: false,
+        dest: '.tmp/scripts/config.js',
+        name: 'affogatoApp',
+      },
+      development: {
+        constants: {
+          CONFIG: {
+            apiURL: 'http://localhost:5000/',
+          }
+        }
+      },
+    },
     // Watches files for changes and runs tasks based on the changed files
     watch: {
       bower: {
@@ -396,6 +410,7 @@ module.exports = function (grunt) {
     grunt.task.run([
       'clean:server',
       'wiredep',
+      'ngconstant:development',
       'concurrent:server',
       'autoprefixer',
       'connect:livereload',
