@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import sqlite3
-from urllib.request import urlopen
+from six.moves.urllib.request import urlopen
 
 from dateutil import parser
 

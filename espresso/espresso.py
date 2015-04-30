@@ -7,7 +7,6 @@ from flask_cors import CORS
 import sys
 sys.path.append('..')
 from glass import glass
-from gelato.cream import cream
 
 app = Flask(__name__)
 cors = CORS(app)
