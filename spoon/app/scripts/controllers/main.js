@@ -12,7 +12,7 @@ angular.module('affogatoApp')
 
   var counterClick = function(feature, latLng) {
     console.log(feature);
-    $scope.counter = feature.properties.id;
+    $scope.counter = feature.properties;
   }
 
   var addCounters = function() {

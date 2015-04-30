@@ -1,5 +1,13 @@
+import json
+import logging
 import os
 import sqlite3
+from urllib.request import urlopen
+
+from dateutil import parser
+
+
+logging.basicConfig(level=logging.INFO)
 
 DB_FILE = os.path.join(os.path.dirname(__file__), 'glass.db')
 
@@ -51,25 +59,129 @@ def import_counters():
                                              lat REAL, lon REAL, title TEXT)"""
                    )
     for counter in counters:
-        print("inserting {}".format(counter))
+        logging.info("inserting {}".format(counter))
         cursor.execute("""INSERT INTO counters (url, lat, lon, title)
                        VALUES (:url, :lat, :lon, :title)""", counter)
-        conn.commit()
 
+    conn.commit()
+    conn.close()
+
+def normalize_field_names(dct, counter):
+    logging.debug('parsing ' + str(dct))
+    translation_map = {
+        'north': 'bike_north',
+        'nb': 'bike_north',
+        'south': 'bike_south',
+        'sb': 'bike_south',
+        'fremont_bridge_nb': 'bike_north',
+        'fremont_bridge_sb': 'bike_south',
+    }
+
+    for k,v in list(dct.items()):
+        if k in translation_map:
+            dct[translation_map[k]] = int(v)
+            del dct[k]
+
+        if 'total' in k:
+            dct['total'] = v
+            del dct[k]
+
+    dct['id'] = counter['id']
+    try:
+        dct['date'] = int(parser.parse(dct['date']).strftime('%s'))
+    except KeyError as e:
+        logging.warn("record didn't contain a date? error: {}".format(e))
+        return None
+    required_params = ('bike_north', 'bike_south', 'bike_west', 'bike_east')
+    for p in required_params:
+        if not p in dct:
+            dct[p] = None
+
+    logging.debug(dct)
+    return dct
+
+def cache_counter_response(counter):
+    cache_dir = os.path.join(os.path.dirname(__file__), 'cache')
+    if not os.path.isdir(cache_dir):
+        os.makedirs(cache_dir)
+    cached = os.path.join(cache_dir, str(counter['id']) + '.json')
+    try:
+        with open(cached) as f:
+            logging.info("found cached API response")
+            raw_data = f.read()
+    except Exception as e:
+        logging.info("caching API response")
+        url = counter['url'] + '?$limit=50000'
+        raw_data = urlopen(url).read().decode('utf-8')
+        with open(cached, 'w') as f:
+            f.write(raw_data)
+    finally:
+        return raw_data
+
+def import_counter_data(counter):
+    raw_data = cache_counter_response(counter)
+    def data():
+        for record in json.loads(raw_data):
+            dct = normalize_field_names(record, counter)
+            if dct:
+                yield dct
+
+    conn = get_conn()
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS raw
+        (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        counter_id INTEGER,
+        datetime INTEGER,
+        bike_north INTEGER,
+        bike_south INTEGER,
+        bike_east INTEGER,
+        bike_west INTEGER,
+        FOREIGN KEY(counter_id) REFERENCES counters(id),
+        UNIQUE(counter_id, datetime)
+        )
+        """)
+
+    cursor.executemany("""INSERT OR IGNORE INTO raw(counter_id, datetime, bike_north, bike_south, bike_east, bike_west)
+        VALUES(:id, :date, :bike_north, :bike_south, :bike_east, :bike_west)""",
+        data()
+        )
+
+    conn.commit()
+    conn.close()
 
 def get_counters():
     conn = get_conn()
     c = conn.cursor()
     for row in c.execute('SELECT * from counters'):
         yield row
-
+    conn.close()
 
 def get_counter(id):
     conn = get_conn()
     c = conn.cursor()
     c.execute('SELECT * from counters where id=:id', {'id':id})
-    return c.fetchone()
+    counter = c.fetchone()
+    conn.close()
+    return counter
 
+def get_counter_data(id):
+    conn = get_conn()
+    c = conn.cursor()
+    c.execute("""
+        SELECT date(datetime,'unixepoch') as datetime,
+        sum(bike_north) as bike_north,
+        sum(bike_south) as bike_south,
+        sum(bike_east) as bike_east,
+        sum(bike_west) as bike_west
+        FROM raw
+        WHERE counter_id=:id
+        GROUP BY date(datetime, 'unixepoch')
+        ORDER BY date(datetime, 'unixepoch')""", {'id':id})
+    data = c.fetchall()
+    conn.close()
+    return data
 
 def _import_analysis(df, table_name):
     '''Write analysis dataframe (df) to sqlite db using provided table_name.'''
@@ -89,6 +201,7 @@ def _import_analysis(df, table_name):
 
 
 if __name__ == "__main__":
-    print("Counters in DB:")
-    for counter in get_counters():
-        print("{id}: {url} {title}".format(**counter))
+    import_counters()
+    for counter in list(get_counters()):
+        logging.info("{id}: {url} {title}".format(**counter))
+        import_counter_data(counter)

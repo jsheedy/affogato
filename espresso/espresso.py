@@ -7,6 +7,7 @@ from flask_cors import CORS
 import sys
 sys.path.append('..')
 from glass import glass
+from gelato.cream import cream
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -46,15 +47,8 @@ def counters():
 @app.route('/counters/<int:id>/data/')
 def counter_data(id):
     counter = dict(glass.get_counter(id))
-    data = [
-        ['2011-07-01T19:15:28Z', random.random()*4],
-        ['2011-07-01T19:16:28Z', random.random()*4],
-        ['2011-07-01T19:17:28Z', random.random()*4],
-        ['2011-07-01T19:18:28Z', random.random()*4],
-        ['2011-07-01T19:19:28Z', random.random()*4],
-        ['2011-07-01T19:20:28Z', random.random()*4],
-        ['2011-07-01T19:21:28Z', random.random()*4],
-    ]
+    data = list(map(dict, glass.get_counter_data(id)))
+
     response = {
         'counter': counter,
         'data': data
