@@ -33,13 +33,20 @@ module.exports = function (grunt) {
         dest: '.tmp/scripts/config.js',
         name: 'affogatoApp',
       },
+      production: {
+        constants: {
+          CONFIG: {
+            apiURL: '/',
+          }
+        }
+      },
       development: {
         constants: {
           CONFIG: {
             apiURL: 'http://localhost:5000/',
           }
         }
-      },
+      }
     },
     // Watches files for changes and runs tasks based on the changed files
     watch: {
@@ -328,7 +335,7 @@ module.exports = function (grunt) {
         files: [{
           expand: true,
           cwd: '.tmp/concat/scripts',
-          src: ['*.js', '!oldieshim.js'],
+          src: ['scripts.js'],
           dest: '.tmp/concat/scripts'
         }]
       }
@@ -434,6 +441,7 @@ module.exports = function (grunt) {
   grunt.registerTask('build', [
     'clean:dist',
     'wiredep',
+    'ngconstant:production',
     'useminPrepare',
     'concurrent:dist',
     'autoprefixer',
