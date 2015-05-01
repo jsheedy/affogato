@@ -73,6 +73,8 @@ def normalize_field_names(dct, counter):
         'nb': 'bike_north',
         'south': 'bike_south',
         'sb': 'bike_south',
+        'east': 'bike_east',
+        'west': 'bike_west',
         'fremont_bridge_nb': 'bike_north',
         'fremont_bridge_sb': 'bike_south',
     }
@@ -142,6 +144,9 @@ def import_counter_data(counter):
         UNIQUE(counter_id, datetime)
         )
         """)
+
+    # cursor.execute("""PRAGMA journal_mode = MEMORY""")
+    # cursor.execute("""PRAGMA synchronous = OFF""")
 
     cursor.executemany("""INSERT OR IGNORE INTO raw(counter_id, datetime, bike_north, bike_south, bike_east, bike_west)
         VALUES(:id, :date, :bike_north, :bike_south, :bike_east, :bike_west)""",
