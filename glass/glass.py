@@ -178,7 +178,7 @@ def get_counter_data(id=None):
         WHERE = ""
 
     query = """
-        SELECT date(datetime,'unixepoch') as datetime,
+        SELECT datetime,
         bike_north,
         bike_south,
         bike_east,
