@@ -46,7 +46,7 @@ def counters():
 @app.route('/counters/<int:id>/data/')
 def counter_data(id):
     counter = dict(glass.get_counter(id))
-    data = list(map(dict, glass.get_counter_data(id)))
+    data = list(map(dict, glass.get_daily_counter_data(id)))
 
     response = {
         'counter': counter,

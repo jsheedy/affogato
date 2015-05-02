@@ -171,7 +171,29 @@ def get_counter(id):
     conn.close()
     return counter
 
-def get_counter_data(id):
+def get_counter_data(id=None):
+    conn = get_conn()
+    c = conn.cursor()
+    if id:
+        WHERE = "WHERE counter_id = :id"
+    else:
+        WHERE = ""
+
+    query = """
+        SELECT date(datetime,'unixepoch') as datetime,
+        bike_north,
+        bike_south,
+        bike_east,
+        bike_west
+        FROM raw
+        {WHERE}
+        ORDER BY counter_id, date(datetime, 'unixepoch')""".format(**{'WHERE': WHERE })
+    c.execute(query, {'id':id})
+    data = c.fetchall()
+    conn.close()
+    return data
+
+def get_daily_counter_data(id):
     conn = get_conn()
     c = conn.cursor()
     c.execute("""
