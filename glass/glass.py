@@ -90,7 +90,8 @@ def normalize_field_names(dct, counter):
 
     dct['id'] = counter['id']
     try:
-        dct['date'] = int(parser.parse(dct['date']).strftime('%s'))
+        dct['date'] = parser.parse(dct['date'])
+        # dct['date'] = int(parser.parse(dct['date']).strftime('%s'))
     except KeyError as e:
         logging.warn("record didn't contain a date? error: {}".format(e))
         return None
@@ -144,9 +145,6 @@ def import_counter_data(counter):
         UNIQUE(counter_id, datetime)
         )
         """)
-
-    # cursor.execute("""PRAGMA journal_mode = MEMORY""")
-    # cursor.execute("""PRAGMA synchronous = OFF""")
 
     cursor.executemany("""INSERT OR IGNORE INTO raw(counter_id, datetime, bike_north, bike_south, bike_east, bike_west)
         VALUES(:id, :date, :bike_north, :bike_south, :bike_east, :bike_west)""",
@@ -209,23 +207,6 @@ def get_daily_counter_data(id):
     data = c.fetchall()
     conn.close()
     return data
-
-def _import_analysis(df, table_name):
-    '''Write analysis dataframe (df) to sqlite db using provided table_name.'''
-    conn = get_conn()
-    cursor = conn.cursor()
-    cursor.execute('DROP TABLE IF EXISTS ' + table_name)
-    cursor.execute("""CREATE TABLE """ + table_name +
-                   """ (date INT, id INT, north INT, south INT,
-                        east INT, west INT)""")
-    for counter in counters:
-        print("inserting {}".format(counter))
-        cursor.execute("""INSERT INTO """ + table_name +
-                       """ (date, id, north, south, east, west)
-                       VALUES (:date, :id, :north, :south, :east, :west)""",
-                       df)
-        conn.commit()
-
 
 if __name__ == "__main__":
     import_counters()
