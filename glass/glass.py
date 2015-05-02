@@ -187,7 +187,7 @@ def get_counter_data(id=None):
         {WHERE}
         ORDER BY counter_id, date(datetime, 'unixepoch')""".format(**{'WHERE': WHERE })
     c.execute(query, {'id':id})
-    data = c.fetchall()
+    data = [dict(x) for x in c]
     conn.close()
     return data
 
