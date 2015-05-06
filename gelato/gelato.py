@@ -1,5 +1,5 @@
 ###############################################################################
-# Name      : 
+# Name      :
 # Purpose   :
 # Author    : Austin Gross
 # Created   : 2015-04-24
@@ -8,19 +8,14 @@
 
 
 import pandas as pd
-# import statsmodels.api as sm
+import statsmodels.api as sm
 import statsmodels.formula.api as smf
 
-import sys
-sys.path.append('../')
-from glass import glass
 
+def deseasonalize(timeseries):
+    '''Accept iterator of dicts of timeseries and yields deseasonalized data'''
 
-def deseasonalize(id=None):
-    '''Accept location id and return deseasonalized data as json.'''
-    counter = glass.get_counter_data(id=id)
-
-    counter = pd.DataFrame(counter)
+    counter = pd.DataFrame(timeseries)
 
     counter['datetime'] = pd.to_datetime(counter.datetime)
 
@@ -45,6 +40,4 @@ def deseasonalize(id=None):
 
     counter['result'] = result.resid
 
-    result = counter[['datetime', 'result']].to_json()
-
-    return(result)
+    return counter[['datetime','result']]
