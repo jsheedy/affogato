@@ -14,3 +14,5 @@ scipy==0.15.1
 six==1.9.0
 statsmodels==0.6.1
 Werkzeug==0.10.4
+nose==1.3.6
+ipdbplugin==1.4.2
