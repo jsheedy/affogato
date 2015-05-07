@@ -1,3 +1,4 @@
+import contextlib
 import json
 import logging
 import os
@@ -44,12 +45,14 @@ counters = [
      'title': 'Spokane Street Bridge'}
 ]
 
-
+@contextlib.contextmanager
 def get_conn():
-    conn = sqlite3.connect(DB_FILE)
-    conn.row_factory = sqlite3.Row
-    return conn
-
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        conn.row_factory = sqlite3.Row
+        yield conn
+    finally:
+        conn.close()
 
 def import_counters():
     conn = get_conn()
@@ -155,58 +158,53 @@ def import_counter_data(counter):
     conn.close()
 
 def get_counters():
-    conn = get_conn()
-    c = conn.cursor()
-    for row in c.execute('SELECT * from counters'):
-        yield row
-    conn.close()
+    with get_conn() as conn:
+        c = conn.cursor()
+        for row in c.execute('SELECT * from counters'):
+            yield row
 
 def get_counter(id):
-    conn = get_conn()
-    c = conn.cursor()
-    c.execute('SELECT * from counters where id=:id', {'id':id})
-    counter = c.fetchone()
-    conn.close()
-    return counter
+    with get_conn() as conn:
+        c = conn.cursor()
+        c.execute('SELECT * from counters where id=:id', {'id':id})
+        return c.fetchone()
 
 def get_counter_data(id=None):
-    conn = get_conn()
-    c = conn.cursor()
-    if id:
-        WHERE = "WHERE counter_id = :id"
-    else:
-        WHERE = ""
+    with get_conn() as conn:
+        c = conn.cursor()
+        if id:
+            WHERE = "WHERE counter_id = :id"
+        else:
+            WHERE = ""
 
-    query = """
-        SELECT datetime,
-        bike_north,
-        bike_south,
-        bike_east,
-        bike_west
-        FROM raw
-        {WHERE}
-        ORDER BY counter_id, date(datetime, 'unixepoch')""".format(**{'WHERE': WHERE })
-    c.execute(query, {'id':id})
-    data = [dict(x) for x in c]
-    conn.close()
-    return data
+        query = """
+            SELECT datetime,
+            bike_north,
+            bike_south,
+            bike_east,
+            bike_west
+            FROM raw
+            {WHERE}
+            ORDER BY counter_id, datetime""".format(**{'WHERE': WHERE })
+        c.execute(query, {'id':id})
+        data = [dict(x) for x in c]
+        return data
 
 def get_daily_counter_data(id):
-    conn = get_conn()
-    c = conn.cursor()
-    c.execute("""
-        SELECT date(datetime,'unixepoch') as datetime,
-        sum(bike_north) as bike_north,
-        sum(bike_south) as bike_south,
-        sum(bike_east) as bike_east,
-        sum(bike_west) as bike_west
-        FROM raw
-        WHERE counter_id=:id
-        GROUP BY date(datetime, 'unixepoch')
-        ORDER BY date(datetime, 'unixepoch')""", {'id':id})
-    data = c.fetchall()
-    conn.close()
-    return data
+    with get_conn() as conn:
+        c = conn.cursor()
+        c.execute("""
+            SELECT date(datetime,'unixepoch') as datetime,
+            sum(bike_north) as bike_north,
+            sum(bike_south) as bike_south,
+            sum(bike_east) as bike_east,
+            sum(bike_west) as bike_west
+            FROM raw
+            WHERE counter_id=:id
+            GROUP BY date(datetime, 'unixepoch')
+            ORDER BY date(datetime, 'unixepoch')""", {'id':id})
+        return c.fetchall()
+
 
 if __name__ == "__main__":
     import_counters()
