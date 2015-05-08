@@ -51,23 +51,24 @@ def get_conn():
         conn = sqlite3.connect(DB_FILE)
         conn.row_factory = sqlite3.Row
         yield conn
+    except:
+        conn.rollback()
+    else:
+        conn.commit()
     finally:
         conn.close()
 
 def import_counters():
-    conn = get_conn()
-    cursor = conn.cursor()
-    cursor.execute('DROP TABLE IF EXISTS counters')
-    cursor.execute("""CREATE TABLE counters (id INTEGER PRIMARY KEY, url TEXT,
-                                             lat REAL, lon REAL, title TEXT)"""
-                   )
-    for counter in counters:
-        logging.info("inserting {}".format(counter))
-        cursor.execute("""INSERT INTO counters (url, lat, lon, title)
-                       VALUES (:url, :lat, :lon, :title)""", counter)
-
-    conn.commit()
-    conn.close()
+    with get_conn() as conn:
+        cursor = conn.cursor()
+        cursor.execute('DROP TABLE IF EXISTS counters')
+        cursor.execute("""CREATE TABLE counters (id INTEGER PRIMARY KEY, url TEXT,
+                                                 lat REAL, lon REAL, title TEXT)"""
+                       )
+        for counter in counters:
+            logging.info("inserting {}".format(counter))
+            cursor.execute("""INSERT INTO counters (url, lat, lon, title)
+                           VALUES (:url, :lat, :lon, :title)""", counter)
 
 def normalize_field_names(dct, counter):
     logging.debug('parsing ' + str(dct))
@@ -94,7 +95,6 @@ def normalize_field_names(dct, counter):
     dct['id'] = counter['id']
     try:
         dct['date'] = parser.parse(dct['date'])
-        # dct['date'] = int(parser.parse(dct['date']).strftime('%s'))
     except KeyError as e:
         logging.warn("record didn't contain a date? error: {}".format(e))
         return None
@@ -132,30 +132,27 @@ def import_counter_data(counter):
             if dct:
                 yield dct
 
-    conn = get_conn()
-    cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS raw
-        (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        counter_id INTEGER,
-        datetime INTEGER,
-        bike_north INTEGER,
-        bike_south INTEGER,
-        bike_east INTEGER,
-        bike_west INTEGER,
-        FOREIGN KEY(counter_id) REFERENCES counters(id),
-        UNIQUE(counter_id, datetime)
-        )
-        """)
+    with get_conn() as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS raw
+            (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            counter_id INTEGER,
+            datetime INTEGER,
+            bike_north INTEGER,
+            bike_south INTEGER,
+            bike_east INTEGER,
+            bike_west INTEGER,
+            FOREIGN KEY(counter_id) REFERENCES counters(id),
+            UNIQUE(counter_id, datetime)
+            )
+            """)
 
-    cursor.executemany("""INSERT OR IGNORE INTO raw(counter_id, datetime, bike_north, bike_south, bike_east, bike_west)
-        VALUES(:id, :date, :bike_north, :bike_south, :bike_east, :bike_west)""",
-        data()
-        )
-
-    conn.commit()
-    conn.close()
+        cursor.executemany("""INSERT OR IGNORE INTO raw(counter_id, datetime, bike_north, bike_south, bike_east, bike_west)
+            VALUES(:id, :date, :bike_north, :bike_south, :bike_east, :bike_west)""",
+            data()
+            )
 
 def get_counters():
     with get_conn() as conn:
@@ -194,15 +191,15 @@ def get_daily_counter_data(id):
     with get_conn() as conn:
         c = conn.cursor()
         c.execute("""
-            SELECT date(datetime,'unixepoch') as datetime,
+            SELECT DATE(datetime) as datetime,
             sum(bike_north) as bike_north,
             sum(bike_south) as bike_south,
             sum(bike_east) as bike_east,
             sum(bike_west) as bike_west
             FROM raw
             WHERE counter_id=:id
-            GROUP BY date(datetime, 'unixepoch')
-            ORDER BY date(datetime, 'unixepoch')""", {'id':id})
+            GROUP BY datetime
+            ORDER BY datetime""", {'id':id})
         return c.fetchall()
 
 
