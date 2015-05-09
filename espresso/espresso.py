@@ -7,6 +7,7 @@ from flask_cors import CORS
 import sys
 sys.path.append('..')
 from glass import glass
+from gelato import gelato
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -46,11 +47,21 @@ def counters():
 @app.route('/counters/<int:id>/data/')
 def counter_data(id):
     counter = dict(glass.get_counter(id))
-    data = list(map(dict, glass.get_daily_counter_data(id)))
+    data = list(map(dict, glass.get_counter_data(id)))
 
     response = {
         'counter': counter,
         'data': data
+    }
+    return Response(json.dumps(response), mimetype='application/json')
+
+@app.route('/counters/<int:id>/data/deseasonalized/')
+def counter_data_deseasonalized(id):
+    counter_data = list(map(dict, glass.get_counter_data(id)))
+    data = gelato.deseasonalize(counter_data)
+    list_data = [(str(x[0]),x[1]) for x in data.values.tolist()]
+    response = {
+        'data': list_data
     }
     return Response(json.dumps(response), mimetype='application/json')
 
