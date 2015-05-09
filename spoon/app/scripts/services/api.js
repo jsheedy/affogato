@@ -12,6 +12,7 @@ angular.module('affogatoApp')
       Counters: resourceFactory('counters/'),
       Counter: resourceFactory('counters/:id'),
       CounterData: resourceFactory('counters/:id/data/'),
+      CounterDataDeseasonalized: resourceFactory('counters/:id/data/deseasonalized/'),
       apiURL: CONFIG.apiURL
     };
 

@@ -2,4 +2,10 @@
 <p>Sustainable XOXO migas church-key. Butcher Schlitz Tumblr VHS. Vinyl scenester twee Odd Future, umami polaroid semiotics American Apparel tousled. Pop-up flexitarian pour-over, 90's ennui YOLO chillwave Godard hoodie Bushwick. High Life farm-to-table pickled post-ironic, kitsch art party craft beer whatever jean shorts Banksy Echo Park narwhal. Meh sriracha artisan locavore Austin aesthetic. 90's photo booth meditation whatever, 8-bit chillwave brunch.</p>
 
 <leaflet id="mainmap" center="center"></leaflet>
-<affogato-chart counter="counter"></affogato-chart>
+<h2 ng-bind="counter.title"></h2>
+<div class="chart-container">
+	<affogato-chart counter="counter" type="raw"></affogato-chart>
+</div>
+<div class="chart-container">
+	<affogato-chart counter="counter" type="deseasonalized"></affogato-chart>
+</div>

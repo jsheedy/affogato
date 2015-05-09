@@ -3,11 +3,10 @@
 angular.module('affogatoApp')
 .controller('MainCtrl', function ($scope, affogatoAPI, leafletData) {
   $scope.center = {
-    lat: 47.6,
-    lng: -122.2,
-    zoom: 12
+    lat: 47.62,
+    lng: -122.3,
+    zoom: 11
   };
-
   $scope.counter = undefined;
 
   var counterClick = function(feature) {

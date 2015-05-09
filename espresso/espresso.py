@@ -4,6 +4,7 @@ import random
 from flask import Flask, Response
 from flask_cors import CORS
 
+import convert
 import sys
 sys.path.append('..')
 from glass import glass
@@ -47,11 +48,12 @@ def counters():
 @app.route('/counters/<int:id>/data/')
 def counter_data(id):
     counter = dict(glass.get_counter(id))
-    data = list(map(dict, glass.get_counter_data(id)))
+    data = list(map(dict, glass.get_daily_counter_data(id)))
 
+    response_data = [(row['datetime'], row['bike_north']) for row in data]
     response = {
         'counter': counter,
-        'data': data
+        'data': response_data
     }
     return Response(json.dumps(response), mimetype='application/json')
 
@@ -59,7 +61,8 @@ def counter_data(id):
 def counter_data_deseasonalized(id):
     counter_data = list(map(dict, glass.get_counter_data(id)))
     data = gelato.deseasonalize(counter_data)
-    list_data = [(str(x[0]),x[1]) for x in data.values.tolist()]
+    daily_data = convert.aggregate_dataframe(data)
+    list_data = convert.dataframe_to_list(daily_data)
     response = {
         'data': list_data
     }

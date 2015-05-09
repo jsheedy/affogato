@@ -14,28 +14,28 @@ body {
 }
 
 #mainmap {
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  width: 100%;
-  height: 100%;
+  float: left;
+  width: 50%;
+  height: 500px;
+}
+.chart-container {
+  height: 400px;
+  z-index: 2;
+  float:right;
+  clear: right;
+  border: 1px solid black;
+  background-color: rgba(0,0,0,0);
+  padding: 30px;
+  width: 50%;
+  color: white;
 }
 .affogato-chart {
-  z-index: 2;
-  border: 1px solid black;
-  background-color: rgba(0,0,0,.5);
-  padding: 30px;
   font-size: 20pt;
-  color: white;
-  position: absolute;
-  width: 50%;
   height: 100%;
-  top: 0px;
-  right: 0px;
   svg {
     border: 1px solid white;
     rect {
-      fill: pink;
+      fill: rgba(100,100,255,1.0);
       stroke: black;
       stroke-width: 0px;
     }
@@ -49,10 +49,14 @@ body {
   border-top: 1px solid #e5e5e5;
 }
 
+.container {
+  margin-left:20px;
+  margin-right: 20px;
+}
 /* Responsive: Portrait tablets and up */
 @media screen and (min-width: 768px) {
   .container {
-    max-width: 730px;
+    max-width: 100%;
   }
 
   /* Remove the padding we set earlier */
