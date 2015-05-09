@@ -11,14 +11,6 @@ body {
 /* Custom page header */
 .header {
   border-bottom: 1px solid #e5e5e5;
-
-  /* Make the masthead heading the same height as the navigation */
-  h3 {
-    margin-top: 0;
-    margin-bottom: 0;
-    line-height: 40px;
-    padding-bottom: 19px;
-  }
 }
 
 #mainmap {
@@ -30,6 +22,7 @@ body {
 }
 .affogato-chart {
   z-index: 2;
+  border: 1px solid black;
   background-color: rgba(0,0,0,.5);
   padding: 30px;
   font-size: 20pt;
@@ -40,6 +33,7 @@ body {
   top: 0px;
   right: 0px;
   svg {
+    border: 1px solid white;
     rect {
       fill: pink;
       stroke: black;

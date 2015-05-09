@@ -198,7 +198,7 @@ def get_daily_counter_data(id):
             sum(bike_west) as bike_west
             FROM raw
             WHERE counter_id=:id
-            GROUP BY datetime
+            GROUP BY DATE(datetime)
             ORDER BY datetime""", {'id':id})
         return c.fetchall()
 
