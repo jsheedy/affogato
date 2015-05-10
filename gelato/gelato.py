@@ -8,24 +8,21 @@
 
 
 import pandas as pd
-import statsmodels.api as sm
 import statsmodels.formula.api as smf
 
 
-def deseasonalize(timeseries):
-    '''Accept iterator of dicts of timeseries and yields deseasonalized data'''
+def deseason(timeseries):
+    '''Accept iterator of dicts of timeseries and yield deseasonalized data'''
 
     counter = pd.DataFrame(timeseries)
 
     counter['datetime'] = pd.to_datetime(counter.datetime)
 
+    counter.sort('datetime', inplace=True)
+
     counter['trend'] = counter.index
 
-    counter = pd.melt(counter, id_vars=['datetime', 'trend'])
-
-    counter = counter[counter.value.notnull()]
-
-    counter['value'] = counter.value.astype('int')
+    counter = counter[counter.notnull().any(axis=1)]
 
     counter.set_index('datetime', inplace=True)
 
@@ -35,9 +32,19 @@ def deseasonalize(timeseries):
 
     counter.reset_index(inplace=True)
 
-    fmla = 'value ~ -1 + trend + C(woy) + C(dow) + C(hr)'
+    fmla = 'inbound ~ trend + C(woy) + C(dow) + C(hr)'
     result = smf.ols(formula=fmla, data=counter).fit()
 
-    counter['result'] = result.resid
+    counter['fitted_inbound'] = result.predict()
+    counter['residuals_inbound'] = result.resid
 
-    return counter[['datetime','result']]
+    fmla = 'outbound ~ trend + C(woy) + C(dow) + C(hr)'
+    result = smf.ols(formula=fmla, data=counter).fit()
+
+    counter['fitted_outbound'] = result.predict()
+    counter['residuals_outbound'] = result.resid
+
+    mask = ['datetime', 'fitted_inbound', 'residuals_inbound',
+            'fitted_outbound', 'residuals_outbound']
+
+    return counter[mask].to_dict('records')
