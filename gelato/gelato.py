@@ -37,14 +37,18 @@ def deseason(timeseries):
 
     counter['fitted_inbound'] = result.predict()
     counter['residuals_inbound'] = result.resid
+    counter['trend_inbound'] = result.params.trend * counter.trend
 
     fmla = 'outbound ~ trend + C(woy) + C(dow) + C(hr)'
     result = smf.ols(formula=fmla, data=counter).fit()
 
     counter['fitted_outbound'] = result.predict()
     counter['residuals_outbound'] = result.resid
+    counter['trend_outbound'] = result.params.trend * counter.trend
 
-    mask = ['datetime', 'fitted_inbound', 'residuals_inbound',
-            'fitted_outbound', 'residuals_outbound']
+    mask = ['datetime',
+            'fitted_inbound', 'fitted_outbound',
+            'residuals_inbound', 'residuals_outbound',
+            'trend_inbound', 'trend_outbound']
 
     return counter[mask].to_dict('records')
