@@ -23,21 +23,21 @@ angular.module('affogatoApp')
 
         var updateData = function() {
           var barWidth = width / $scope.data.data.length;
-          var max = d3.max($scope.data.data, function(x) {return x[1];})
+          var max = d3.max($scope.data.data, function(x) {return x[$scope.field];})
           var y = d3.scale.linear()
             .domain([0,max])
             .range([height,0]);
 
           var bars = svg.selectAll('rect')
-            .data($scope.data.data, function(d) {return d[0];})
+            .data($scope.data.data, function(d) {return d['datetime'];})
           bars.enter()
             .append('rect')
-            .attr('x', function(d, i) { return x(d3.time.format('%Y-%m-%d').parse(d[0])); })
+            .attr('x', function(d, i) { return x(d3.time.format('%Y-%m-%d').parse(d['datetime'])); })
             .attr('width', barWidth);
 
           bars.transition()
-            .attr('y', function(d) { return y(d[1]) ; })
-            .attr("height", function(d) { return height - y(d[1]); });
+            .attr('y', function(d) { return y(d[$scope.field]) ; })
+            .attr("height", function(d) { return height - y(d[$scope.field]); });
 
           bars.exit().remove();
         };
@@ -53,7 +53,8 @@ angular.module('affogatoApp')
     restrict: 'E',
     scope: {
       counter: '=',
-      type: '@'
+      type: '@',
+      field: '@'
     },
     templateUrl: 'views/affogato-chart.html',
     controller: controller

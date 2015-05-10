@@ -16,7 +16,7 @@ class GlassTest(unittest.TestCase):
 
     def test_get_counter_data_without_id(self):
         data = list(glass.get_counter_data())
-        self.assertGreater(len(data), 115732)
+        self.assertGreater(len(data), 100000)
 
     def test_get_counters(self):
         data = list(glass.get_counters())

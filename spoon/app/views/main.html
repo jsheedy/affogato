@@ -4,8 +4,11 @@
 <leaflet id="mainmap" center="center"></leaflet>
 <h2 ng-bind="counter.title"></h2>
 <div class="chart-container">
-	<affogato-chart counter="counter" type="raw"></affogato-chart>
+	<affogato-chart counter="counter" type="raw" field="inbound"></affogato-chart>
 </div>
 <div class="chart-container">
-	<affogato-chart counter="counter" type="deseasonalized"></affogato-chart>
+	<affogato-chart counter="counter" type="raw" field="outbound"></affogato-chart>
+</div>
+<div class="chart-container">
+	<affogato-chart counter="counter" type="deseasonalized" field="result"></affogato-chart>
 </div>

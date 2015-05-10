@@ -48,23 +48,24 @@ def counters():
 @app.route('/counters/<int:id>/data/')
 def counter_data(id):
     counter = dict(glass.get_counter(id))
-    data = list(map(dict, glass.get_daily_counter_data(id)))
-
-    response_data = [(row['datetime'], row['bike_north']) for row in data]
+    data = list(glass.get_daily_counter_data(id))
+    # response_data = [(row['datetime'], row['inbound'], row['outbound']) for row in data]
     response = {
         'counter': counter,
-        'data': response_data
+        'data': data
     }
     return Response(json.dumps(response), mimetype='application/json')
 
 @app.route('/counters/<int:id>/data/deseasonalized/')
 def counter_data_deseasonalized(id):
-    counter_data = list(map(dict, glass.get_counter_data(id)))
+    counter_data = list(glass.get_counter_data(id))
     data = gelato.deseasonalize(counter_data)
     daily_data = convert.aggregate_dataframe(data)
     list_data = convert.dataframe_to_list(daily_data)
+    response_data = [{'datetime': x[0], 'result': x[1]} for x in list_data]
+
     response = {
-        'data': list_data
+        'data': response_data
     }
     return Response(json.dumps(response), mimetype='application/json')
 
