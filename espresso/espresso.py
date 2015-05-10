@@ -1,14 +1,17 @@
 import json
+import os
 import random
 
 from flask import Flask, Response
 from flask_cors import CORS
 
-import convert
 import sys
 sys.path.append('..')
+sys.path.append(os.path.dirname(__file__))
 from glass import glass
 from gelato import gelato
+
+import convert
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -58,11 +61,9 @@ def counter_data(id):
 
 @app.route('/counters/<int:id>/data/deseasonalized/')
 def counter_data_deseasonalized(id):
-    counter_data = list(glass.get_counter_data(id))
-    data = gelato.deseasonalize(counter_data)
-    daily_data = convert.aggregate_dataframe(data)
-    list_data = convert.dataframe_to_list(daily_data)
-    response_data = [{'datetime': x[0], 'result': x[1]} for x in list_data]
+    counter_data = list(glass.get_daily_counter_data(id))
+    data = gelato.deseason(counter_data)
+    response_data = [{'datetime': str(x['datetime']).strip(' 00:00:00'), 'inbound': x['fitted_inbound']} for x in data]
 
     response = {
         'data': response_data

@@ -28,6 +28,16 @@ angular.module('affogatoApp')
             .domain([0,max])
             .range([height,0]);
 
+          var yAxis = d3.svg.axis()
+            .scale(y)
+            .orient("left")
+            .ticks(5);
+            //Create Y axis
+          svg.append("g")
+              .attr("class", "axis")
+              .attr("transform", "translate(" + 0 + ",0)")
+              .call(yAxis);
+
           var bars = svg.selectAll('rect')
             .data($scope.data.data, function(d) {return d['datetime'];})
           bars.enter()
