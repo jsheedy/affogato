@@ -62,10 +62,8 @@ def counter_data(id):
 @app.route('/counters/<int:id>/data/deseasonalized/')
 def counter_data_deseasonalized(id):
     counter_data = list(glass.get_daily_counter_data(id))
-    data = gelato.deseasonalize(counter_data)
-    daily_data = convert.aggregate_dataframe(data)
-    list_data = convert.dataframe_to_list(daily_data)
-    response_data = [{'datetime': x[0], 'result': x[1]} for x in list_data]
+    data = gelato.deseason(counter_data)
+    response_data = [{'datetime': str(x['datetime']).strip(' 00:00:00'), 'inbound': x['fitted_inbound']} for x in data]
 
     response = {
         'data': response_data
@@ -74,5 +72,5 @@ def counter_data_deseasonalized(id):
 
 
 if __name__ == '__main__':
-    app.debug = False
+    app.debug = True
     app.run()
