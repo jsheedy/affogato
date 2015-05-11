@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import unittest
 
@@ -68,4 +69,15 @@ class TestGelato(unittest.TestCase):
 
         actual = pd.DataFrame(actual)
         expected = pd.DataFrame(expected)
-        self.assertTrue(actual.equals(expected))
+
+        actual.sort(axis=1, inplace=True)
+        expected.sort(axis=1, inplace=True)
+
+        actual.sort(axis=0, inplace=True)
+        expected.sort(axis=0, inplace=True)
+
+        test = np.allclose(actual.drop('datetime', axis=1).values,
+                           expected.drop('datetime', axis=1).values,
+                           atol=1e-6)
+
+        self.assertTrue(test)
