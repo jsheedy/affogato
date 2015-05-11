@@ -196,7 +196,8 @@ def get_counter_data(id=None):
             WHERE = ""
 
         query = """
-            SELECT datetime,
+            SELECT counter_id,
+            datetime,
             inbound,
             outbound
             FROM raw
@@ -206,7 +207,7 @@ def get_counter_data(id=None):
         data = (dict(x) for x in c)
         yield from data
 
-def get_daily_counter_data(id=None):
+def get_aggregated_counter_data(id=None, aggregate='daily'):
     with get_conn() as conn:
         c = conn.cursor()
         if id:
@@ -214,14 +215,21 @@ def get_daily_counter_data(id=None):
         else:
             WHERE = ""
 
+        if aggregate == 'daily':
+            AGGREGATE = "GROUP BY DATE(datetime)"
+        elif aggregate == 'weekly':
+            AGGREGATE = "GROUP BY STRFTIME('%W', datetime)"
+
         query = """
-            SELECT MAX(DATE(datetime)) as datetime,
+            SELECT
+            counter_id,
+            MAX(DATE(datetime)) as datetime,
             sum(inbound) as inbound,
             sum(outbound) as outbound
             FROM raw
             {WHERE}
-            GROUP BY DATE(datetime)
-            ORDER BY datetime""".format(**{'WHERE': WHERE})
+            {AGGREGATE}
+            ORDER BY datetime""".format(**{'WHERE': WHERE, 'AGGREGATE': AGGREGATE})
 
         c.execute(query, {'id':id})
         data = (dict(x) for x in c)

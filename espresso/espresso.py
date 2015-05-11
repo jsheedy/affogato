@@ -2,7 +2,7 @@ import json
 import os
 import random
 
-from flask import Flask, Response
+from flask import Flask, Response, request
 from flask_cors import CORS
 
 import sys
@@ -48,13 +48,18 @@ def counters():
     fc = feature_collection(counters)
     return Response(json.dumps(fc), mimetype='application/json')
 
+@app.route('/counters/data/', defaults={'id': None})
 @app.route('/counters/<int:id>/data/')
 def counter_data(id):
-    counter = dict(glass.get_counter(id))
-    data = list(glass.get_daily_counter_data(id))
+    aggregate = request.args.get('aggregate')
+
+    if aggregate:
+        data = list(glass.get_aggregated_counter_data(id, aggregate=aggregate))
+    else:
+        data = list(glass.get_counter_data(id))
     # response_data = [(row['datetime'], row['inbound'], row['outbound']) for row in data]
     response = {
-        'counter': counter,
+        # 'counter': counter,
         'data': data
     }
     return Response(json.dumps(response), mimetype='application/json')
