@@ -19,11 +19,11 @@ span.title {
   width: 500px;
 }
 .fade.ng-hide {
-  transition:0.2s linear all;
+  transition:0.3s linear all;
   width: 0px;
 }
 .fade.ng-show {
-  transition:0.2s linear all;
+  transition:0.0s linear all;
   opacity:1;
   width: 500px;
 }
@@ -39,6 +39,7 @@ span.title {
   width: 500px;
   padding: 10px;
   margin: 10px;
+  max-width: 45%;
 }
 
 #header {

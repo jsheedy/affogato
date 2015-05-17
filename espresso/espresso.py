@@ -68,8 +68,8 @@ def counter_data_deseasonalized(id):
     data = gelato.deseason(counter_data)
     response_data = [{
         'datetime': str(x['datetime']).replace(' 00:00:00',''),
-        'inbound': x['fitted_inbound'],
-        'outbound': x['fitted_outbound']
+        'inbound': round(x['fitted_inbound'], 2),
+        'outbound': round(x['fitted_outbound'], 2)
         } for x in data]
 
     response = {
