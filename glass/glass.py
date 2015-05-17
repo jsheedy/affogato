@@ -13,52 +13,52 @@ logging.basicConfig(level=logging.INFO)
 DB_FILE = os.path.join(os.path.dirname(__file__), 'glass.db')
 
 counters = [
-    {'url': 'https://data.seattle.gov/resource/mefu-7eau.json',
+    {'url': 'https://data.seattle.gov/resource/mefu-7eau',
      'lat': 47.562903, 'lon': -122.365474,
      'title': '26th Ave SW Greenway at SW Oregon St',
      'inbound_field': 'north',
      'outbound_field': 'south'},
-    {'url': 'https://data.seattle.gov/resource/4qej-qvrz.json',
+    {'url': 'https://data.seattle.gov/resource/4qej-qvrz',
      'lat': 47.619760, 'lon': -122.361463,
      'title': 'Elliott Bay Trail in Myrtle Edwards Park',
      'inbound_field': 'bike_south',
      'outbound_field': 'bike_north'},
-    {'url': 'https://data.seattle.gov/resource/u38e-ybnc.json',
+    {'url': 'https://data.seattle.gov/resource/u38e-ybnc',
      'lat': 47.590466, 'lon': -122.286760,
      'title': 'MTS Trail west of I-90 Bridge',
      'inbound_field': 'bike_north',
      'outbound_field': 'bike_south'},
-    {'url': 'https://data.seattle.gov/resource/uh8h-bme7.json',
+    {'url': 'https://data.seattle.gov/resource/uh8h-bme7',
      'lat': 47.527991, 'lon': -122.280988,
      'title': 'Chief Sealth Trail North of Thistle',
      'inbound_field': 'bike_north',
      'outbound_field': 'bike_south'},
-    {'url': 'https://data.seattle.gov/resource/47yq-6ugv.json',
+    {'url': 'https://data.seattle.gov/resource/47yq-6ugv',
      'lat': 47.670921, 'lon': -122.384768,
      'title': 'NW 58th St Greenway at 22nd Ave NW',
      'inbound_field': 'east',
      'outbound_field': 'west'},
-    {'url': 'https://data.seattle.gov/resource/2z5v-ecg8.json',
+    {'url': 'https://data.seattle.gov/resource/2z5v-ecg8',
      'lat': 47.679563, 'lon': -122.265262,
      'title': 'Burke Gilman Trail north of NE 70th St',
      'inbound_field': 'bike_south',
      'outbound_field': 'bike_north'},
-    {'url': 'https://data.seattle.gov/resource/3h7e-f49s.json',
+    {'url': 'https://data.seattle.gov/resource/3h7e-f49s',
      'lat': 47.673972, 'lon': -122.285791,
      'title': '39th Ave NE Greenway at NE 62nd St',
      'inbound_field': 'south',
      'outbound_field': 'north'},
-    {'url': 'https://data.seattle.gov/resource/j4vh-b42a.json',
+    {'url': 'https://data.seattle.gov/resource/j4vh-b42a',
      'lat': 47.612966, 'lon': -122.320829,
      'title': 'Broadway Bikeway at Union St',
      'inbound_field': 'nb',
      'outbound_field': 'sb'},
-    {'url': 'https://data.seattle.gov/resource/65db-xm6k.json',
+    {'url': 'https://data.seattle.gov/resource/65db-xm6k',
      'lat': 47.647716, 'lon': -122.347391,
      'title': 'Fremont Street Bridge',
      'inbound_field': 'fremont_bridge_sb',
      'outbound_field': 'fremont_bridge_nb'},
-    {'url': 'https://data.seattle.gov/resource/upms-nr8w.json',
+    {'url': 'https://data.seattle.gov/resource/upms-nr8w',
      'lat': 47.571353, 'lon': -122.350940,
      'title': 'Spokane Street Bridge',
      'inbound_field': 'east',
@@ -98,6 +98,9 @@ def import_counters():
                            VALUES (:url, :lat, :lon, :inbound_field, :outbound_field,
                            :title)""", counter)
 
+def parse_date(date_str):
+    return parser.parse(date_str)
+
 def normalize_field_names(dct, counter):
     logging.debug('parsing ' + str(dct))
     translation_map = {
@@ -116,7 +119,7 @@ def normalize_field_names(dct, counter):
 
     dct['id'] = counter['id']
     try:
-        dct['date'] = parser.parse(dct['date'])
+        dct['date'] = parse_date(dct['date'])
     except KeyError as e:
         logging.warn("record didn't contain a date? error: {}".format(e))
         return
@@ -139,7 +142,7 @@ def cache_counter_response(counter):
             raw_data = f.read()
     except Exception as e:
         logging.info("caching API response")
-        url = counter['url'] + '?$limit=50000'
+        url = counter['url'] + '.json' + '?$limit=50000'
         raw_data = urlopen(url).read().decode('utf-8')
         with open(cached, 'w') as f:
             f.write(raw_data)
