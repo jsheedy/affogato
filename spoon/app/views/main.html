@@ -1,8 +1,28 @@
-<h1>Affogato</h1>
-<p>Sustainable XOXO migas church-key. Butcher Schlitz Tumblr VHS. Vinyl scenester twee Odd Future, umami polaroid semiotics American Apparel tousled. Pop-up flexitarian pour-over, 90's ennui YOLO chillwave Godard hoodie Bushwick. High Life farm-to-table pickled post-ironic, kitsch art party craft beer whatever jean shorts Banksy Echo Park narwhal. Meh sriracha artisan locavore Austin aesthetic. 90's photo booth meditation whatever, 8-bit chillwave brunch.</p>
+<div class="overlay" id="header">
+	<h3>Affogato: An Analysis of Seattle Bicycle Counter data</h3>
+	<p>
+	Using public data on bicycle ridership collected continuously at fixed locations we estimate the effect on ridership from introducing a bike share program in certain neighborhoods of Seattle, WA.
+	</p><p>
+	By using a Differences-in-Differences econometric technique we recover the causal effect of introducing a bike share program in Seattle, WA on ridership at several locations throughout the city. We control for seasonal effects as well as temperature and rainfall.
+	</p><p>
+ </div>
 
 <leaflet id="mainmap" center="center"></leaflet>
-<h2 ng-bind="counter.title"></h2>
-<affogato-chart counter="counter" type="raw" field="inbound"></affogato-chart>
-<affogato-chart counter="counter" type="raw" field="outbound"></affogato-chart>
-<affogato-chart counter="counter" type="deseasonalized" field="inbound"></affogato-chart>
+
+<div ng-show="counter" class="fade overlay" id="analysis">
+	<span class="fa fa-3x fa-times-circle pull-left close-button" ng-click="counter = null;"></span>
+
+	<span class="clearfix title" ng-bind="counter.title"></span>
+	<p>
+		Data source:
+		<a target="_blank" ng-href="{{counter.url}}" ng-bind="counter.url"></a>
+	</p>
+	Inbound:
+	<affogato-chart counter="counter" type="raw" field="inbound"></affogato-chart>
+	Inbound analysis:
+	<affogato-chart counter="counter" type="deseasonalized" field="outbound"></affogato-chart>
+	Outbound:
+	<affogato-chart counter="counter" type="raw" field="outbound"></affogato-chart>
+	Outbound analysis:
+	<affogato-chart counter="counter" type="deseasonalized" field="outbound"></affogato-chart>
+</div>
