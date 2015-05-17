@@ -1,4 +1,5 @@
 import contextlib
+import datetime
 import json
 import logging
 import os
@@ -101,7 +102,10 @@ def import_counters():
 def parse_date(date_str):
     return parser.parse(date_str)
 
-def normalize_field_names(dct, counter):
+def normalize_field_names(dct, counter, last_dct):
+    """previous record is passed in as last_dct to fill
+    in missing dates"""
+
     logging.debug('parsing ' + str(dct))
     translation_map = {
         counter['inbound_field']: 'inbound',
@@ -121,8 +125,12 @@ def normalize_field_names(dct, counter):
     try:
         dct['date'] = parse_date(dct['date'])
     except KeyError as e:
-        logging.warn("record didn't contain a date? error: {}".format(e))
-        return
+        logging.warn("record didn't contain a date?")
+        if last_dct and 'date' in last_dct:
+            faked_date = last_dct['date'] + datetime.timedelta(hours=1)
+            logging.warn("Attempting to fill in previous date ({}) + 1 hour ({})".format(last_dct['date'], faked_date))
+            dct['date'] = faked_date
+
     required_params = ('inbound', 'outbound')
     for p in required_params:
         if not p in dct:
@@ -152,8 +160,9 @@ def cache_counter_response(counter):
 def import_counter_data(counter):
     raw_data = cache_counter_response(counter)
     def data():
+        dct = {}
         for record in json.loads(raw_data):
-            dct = normalize_field_names(record, counter)
+            dct = normalize_field_names(record, counter, dct)
             if dct:
                 yield dct
 
