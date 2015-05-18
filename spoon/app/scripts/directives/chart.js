@@ -1,6 +1,6 @@
 'use strict';
 angular.module('affogatoApp')
-  .directive('affogatoChart', function(affogatoAPI, $window) {
+  .directive('affogatoChart', function(affogatoAPI, $window, $timeout) {
     var controller = function($scope, $element) {
       var container = d3.select($element[0]);
 
@@ -71,11 +71,13 @@ angular.module('affogatoApp')
         if (!($scope.counter && $scope.counter.id)) {
           return;
         }
-        if ($scope.type === 'raw') {
-          $scope.data = affogatoAPI.CounterData.get({id: $scope.counter.id, aggregate: 'daily'}, $scope.updateData);
-        } else if ($scope.type === 'deseasonalized') {
-          $scope.data = affogatoAPI.CounterDataDeseasonalized.get({id: $scope.counter.id}, $scope.updateData);
-        }
+        $timeout(function() {
+          if ($scope.type === 'raw') {
+            $scope.data = affogatoAPI.CounterData.get({id: $scope.counter.id, aggregate: 'daily'}, $scope.updateData);
+          } else if ($scope.type === 'deseasonalized') {
+            $scope.data = affogatoAPI.CounterDataDeseasonalized.get({id: $scope.counter.id}, $scope.updateData);
+          }
+        }, 50);
       });
 
       $scope.$watch(function() {

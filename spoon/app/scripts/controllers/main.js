@@ -7,6 +7,17 @@ angular.module('affogatoApp')
     lng: -122.3,
     zoom: 11
   };
+
+  $scope.layers = {
+              baselayers: {
+                  stamen: {
+                      name: 'stamen',
+                      url: 'http://stamen-tiles-{s}.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.png',
+                      type: 'xyz'
+                  },
+              }
+          };
+
   $scope.counter = undefined;
 
   var counterClick = function(feature) {
