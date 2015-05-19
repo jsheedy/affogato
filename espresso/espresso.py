@@ -66,7 +66,11 @@ def counter_data(id):
 def counter_data_deseasonalized(id):
     counter_data = list(glass.get_aggregated_counter_data(id, aggregate='daily'))
     data = gelato.deseason(counter_data)
-    response_data = [{'datetime': str(x['datetime']).replace(' 00:00:00',''), 'inbound': x['fitted_inbound']} for x in data]
+    response_data = [{
+        'datetime': str(x['datetime']).replace(' 00:00:00',''),
+        'inbound': round(x['fitted_inbound'], 2),
+        'outbound': round(x['fitted_outbound'], 2)
+        } for x in data]
 
     response = {
         'data': response_data

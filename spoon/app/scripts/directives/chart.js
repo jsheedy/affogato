@@ -1,23 +1,24 @@
 'use strict';
 angular.module('affogatoApp')
-  .directive('affogatoChart', function(affogatoAPI, $window) {
+  .directive('affogatoChart', function(affogatoAPI, $window, $timeout) {
     var controller = function($scope, $element) {
       var container = d3.select($element[0]);
-      var width = container.node().getBoundingClientRect().width;
-      var height = container.node().getBoundingClientRect().height;
-      var timeParser = d3.time.format('%Y-%m-%d');
-      var x = d3.time.scale()
-        .domain([
-          timeParser.parse('2012-10-01'),
-          new Date()])
-        .range([0,width]);
-
-      var svg = container.select('svg');
-      svg
-        .attr('width', width)
-        .attr('height', height);
 
       $scope.updateData = function() {
+
+        var width = container.node().getBoundingClientRect().width;
+        var height = container.node().getBoundingClientRect().height;
+        var timeParser = d3.time.format('%Y-%m-%d');
+        var x = d3.time.scale()
+          .domain([
+            timeParser.parse('2012-10-01'),
+            new Date()])
+          .range([0,width]);
+
+        var svg = container.select('svg');
+        svg
+          .attr('width', width)
+          .attr('height', height);
 
         var max = d3.max($scope.data.data, function(x) {return x[$scope.field];})
         var y = d3.scale.linear()
@@ -67,11 +68,16 @@ angular.module('affogatoApp')
       };
 
       $scope.$watch('counter', function() {
-        if ($scope.type === 'raw') {
-          $scope.data = affogatoAPI.CounterData.get({id: $scope.counter.id, aggregate: 'daily'}, $scope.updateData);
-        } else if ($scope.type === 'deseasonalized') {
-          $scope.data = affogatoAPI.CounterDataDeseasonalized.get({id: $scope.counter.id}, $scope.updateData);
+        if (!($scope.counter && $scope.counter.id)) {
+          return;
         }
+        $timeout(function() {
+          if ($scope.type === 'raw') {
+            $scope.data = affogatoAPI.CounterData.get({id: $scope.counter.id, aggregate: 'daily'}, $scope.updateData);
+          } else if ($scope.type === 'deseasonalized') {
+            $scope.data = affogatoAPI.CounterDataDeseasonalized.get({id: $scope.counter.id}, $scope.updateData);
+          }
+        }, 50);
       });
 
       $scope.$watch(function() {
