@@ -42,7 +42,7 @@ def deseason(timeseries, interact=False):
     fmla = 'inbound ~ -1 + trend + '
 
     if interact:
-        fmla += ' C(counter_id) * (C(woy) + C(dow) + C(hr))'
+        fmla += ' C(counter_id) * C(hr) + C(woy) + C(dow)'
     else:
         fmla += ' C(counter_id) + C(woy) + C(dow) + C(hr)'
 
@@ -55,7 +55,7 @@ def deseason(timeseries, interact=False):
     fmla = 'outbound ~ -1 + trend + '
 
     if interact:
-        fmla += ' C(counter_id) * (C(woy) + C(dow) + C(hr))'
+        fmla += ' C(counter_id) * C(hr) + C(woy) + C(dow)'
     else:
         fmla += ' C(counter_id) + C(woy) + C(dow) + C(hr)'
     result = smf.ols(formula=fmla, data=counter).fit()
@@ -64,7 +64,7 @@ def deseason(timeseries, interact=False):
     counter['residuals_outbound'] = result.resid
     counter['trend_outbound'] = result.params.trend * counter.trend
 
-    mask = ['datetime',
+    mask = ['datetime', 'counter_id',
             'fitted_inbound', 'fitted_outbound',
             'residuals_inbound', 'residuals_outbound',
             'trend_inbound', 'trend_outbound']
@@ -80,10 +80,14 @@ def pronto_effect(timeseries):
     counter['post'] = 0
     counter.ix[mask, 'post'] = 1
 
-    mask = [2, 8, 9]
+    mask = [2, 7, 8, 9]
     mask = counter.counter_id.isin(mask)
 
     counter['treat'] = 0
     counter.ix[mask, 'treat'] = 1
+
+    fmla = 'inbound ~ -1 + trend + C(woy) + C(dow) + C(hr) + '
+    fmla += ' C(treat) * C(post)'
+    result = smf.ols(formula=fmla, data=counter).fit()
 
     return counter
